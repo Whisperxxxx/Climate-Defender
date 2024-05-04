@@ -11,11 +11,10 @@ public class PlayerController : MonoBehaviour
     float speed = 4;
     [SerializeField]
     LayerMask ground;
-    [SerializeField]
-    GameObject[] magicPrefabs; // store different magics
     [SerializeField] 
     Transform magicSpawnPoint; // the position of magic 
 
+    public GameObject[] magicPrefabs; // store different magics
     private Rigidbody2D rb;
     private Animator anim;
     public AudioSource jumpAudio, jumpAudio2, runAudio, hurtAudio;
@@ -28,12 +27,13 @@ public class PlayerController : MonoBehaviour
     public bool isDead = false;
     private bool jumpPressed;
     public int jumpCount;
-    public Vector2 bottomOffset;
-    private float collisionRadius = 0.5f; // Radius for the ground check collision
+    public Vector2 bottomOffset; // position for the ground check collision
+    private float collisionRadius = 0.5f; // radius for the ground check collision
 
-    private float magicCooldown = 3f;  // 魔法攻击的冷却时间
-    private float lastMagicTime = -3f;  // 记录上次魔法攻击的时间
-    private int selectedMagicIndex = 0; // 当前选择的魔法索引
+    private float magicCooldown = 5f;  // the cooldown of the magic
+    private float lastMagicTime = -5f;  // record last time magic was used
+    public int selectedMagicIndex = 0; // the index of the current selected magic
+    public MagicUI ui;
 
     void Start()
     {
@@ -50,11 +50,12 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         SwitchAnim();
-        isGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, ground);    // Check if the player is on the ground
+        isGround = Physics2D.OverlapCircle((Vector2)transform.position + bottomOffset, collisionRadius, ground);    // check if the player is on the ground
         if (!isDead && !isAttack)
         {
             GroundMovement();
         }
+        // can't movement when dead or attack
         else if (isDead || isAttack)
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
@@ -63,36 +64,47 @@ public class PlayerController : MonoBehaviour
 
     void HandleInput()
     {
-        if (Input.GetButtonDown("Jump") && jumpCount > 0)
-        {
-            jumpPressed = true;
-        }
         if (!isDead)
         {
             Jump();
-        }
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            Attack();
-        }
-        // 选择魔法
-        if (Input.GetKeyDown(KeyCode.Alpha1)) { selectedMagicIndex = 0; }
-        if (Input.GetKeyDown(KeyCode.Alpha2)) { selectedMagicIndex = 1; }
-        if (Input.GetKeyDown(KeyCode.Alpha3)) { selectedMagicIndex = 2; }
+            if (Input.GetButtonDown("Jump") && jumpCount > 0)
+            {
+                jumpPressed = true;
+            }
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                Attack();
+            }
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                Magic();
+            }
 
-        // 使用魔法
-        if (Input.GetKeyDown(KeyCode.K) && Time.time - lastMagicTime >= magicCooldown)
-        {
-            Magic();
+            // choose the magic
+            if (Input.GetKeyDown(KeyCode.Alpha1) && magicPrefabs.Length > 0)
+            {
+                selectedMagicIndex = 0;
+                ui.UpdateMagicIcon(selectedMagicIndex);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha2) && magicPrefabs.Length > 1)
+            {
+                selectedMagicIndex = 1;
+                ui.UpdateMagicIcon(selectedMagicIndex);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha3) && magicPrefabs.Length > 2)
+            {
+                selectedMagicIndex = 2;
+                ui.UpdateMagicIcon(selectedMagicIndex);
+            }
         }
     }
     void GroundMovement()
     {
-        // Movement
+        // movement
         float horizontalMove = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
 
-        // Flip player sprite based on the direction of movement
+        // flip player sprite based on the direction of movement
         if (horizontalMove != 0)
         {
             transform.localScale = new Vector3(horizontalMove, 1, 1);
@@ -103,9 +115,10 @@ public class PlayerController : MonoBehaviour
     {
         if (isGround)
         {
-            jumpCount = 2;
-            isJump = false;
+            jumpCount = 2; // reset the jump count to 2, allowing for double jump
+            isJump = false; // reset the jump state
         }
+        // handle the initial jump from the ground
         if (jumpPressed && isGround)
         {
             isJump = true;
@@ -113,6 +126,7 @@ public class PlayerController : MonoBehaviour
             jumpCount--;
             jumpPressed = false;
         }
+        // handle the second jump
         else if (jumpPressed && jumpCount > 0 && isJump)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -121,6 +135,7 @@ public class PlayerController : MonoBehaviour
         }
         if (!isGround)
         {
+            // if the player is not on the ground, perform a second jump directly
             if (jumpPressed)
             {
                 isJump = true;
@@ -139,6 +154,7 @@ public class PlayerController : MonoBehaviour
 
     void Attack()
     {
+        // distinguishing between attack and jump attack is because jump attack is movable while attack is not
         if (isGround)
         {
             isAttack = true;
@@ -151,24 +167,36 @@ public class PlayerController : MonoBehaviour
 
     void Magic()
     {
-        if (selectedMagicIndex < magicPrefabs.Length)
+
+        if (selectedMagicIndex < magicPrefabs.Length) // make sure there is the correct index
         {
-            lastMagicTime = Time.time;
-            GameObject magic = Instantiate(magicPrefabs[selectedMagicIndex], magicSpawnPoint.position, Quaternion.identity);
-            magic.GetComponent<Rigidbody2D>().velocity = new Vector2(10f * transform.localScale.x, 0);
-            magic.transform.localScale = new Vector3(transform.localScale.x, 1, 1);
-            isMagic = true;
-            StartCoroutine(MagicCooldown());
+            if (Time.time - lastMagicTime >= magicCooldown) // the time passed must be greater than cd
+            {
+                lastMagicTime = Time.time;  // update the casting time
+                GameObject magic = Instantiate(magicPrefabs[selectedMagicIndex], magicSpawnPoint.position, Quaternion.identity); // generate a magic Prefab
+                magic.GetComponent<Rigidbody2D>().velocity = new Vector2(10f * transform.localScale.x, 0); // give magic a force
+                magic.transform.localScale = new Vector3(transform.localScale.x, 1, 1); // magic direction
+                ui.StartCountDown();
+                isMagic = true;
+                StartCoroutine(MagicCooldown()); //cd
+            }
+            else
+            {
+                // the audio of fail to use
+                Debug.Log("The magic is not ready yet");
+            }
         }
     }
 
+    // wait cd
     IEnumerator MagicCooldown()
     {
         yield return new WaitForSeconds(magicCooldown);
     }
+
     void SwitchAnim()
     {
-        // Update animation parameters
+        // update animation parameters
         anim.SetFloat("running", Mathf.Abs(rb.velocity.x));
         if (isGround)
         {
@@ -254,9 +282,14 @@ public class PlayerController : MonoBehaviour
         isMagic = false;
     }
 
+    public float GetMagicCoolDown()
+    {
+        return magicCooldown;
+    }
+
     void OnDrawGizmos()
     {
-        // Draw a gizmo at the position of the ground check
+        // draw a gizmo at the position of the ground check
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere((Vector2)transform.position + bottomOffset, collisionRadius);
     }
