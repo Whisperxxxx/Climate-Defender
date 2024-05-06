@@ -8,7 +8,8 @@ public class PotionUI : MonoBehaviour
 {
     public TextMeshProUGUI usageCountText;
     public Image countDown; // translucent image
-    public TemperaturePotion potion;
+    public Potion potion;
+
 
     void Start()
     {

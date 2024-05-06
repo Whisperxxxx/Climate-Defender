@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class ItemManager : MonoBehaviour
 {
+    private HealthPotion healthPotion; // the health potion item
     private TemperaturePotion temperaturePotion; // the temperature potion item
 
     void Start()
     {
         temperaturePotion = GetComponent<TemperaturePotion>();
+        healthPotion = GetComponent<HealthPotion>();
 
     }
     void Awake()
@@ -20,7 +22,11 @@ public class ItemManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.U))
         {
-            temperaturePotion.Use(); 
+            healthPotion.Use(); 
+        }
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            temperaturePotion.Use();
         }
     }
 }

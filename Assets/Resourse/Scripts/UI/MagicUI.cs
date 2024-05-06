@@ -17,7 +17,7 @@ public class MagicUI : MonoBehaviour
     // update the UI to show the correct magic icon
     public void UpdateMagicIcon(int magicIndex)
     {
-        if (magicIndex >= 0 && magicIndex < playerController.magicPrefabs.Length) // update the icon only when the magic exists
+        if (magicIndex >= 0 && magicIndex < playerController.magicPrefabs.Count) // update the icon only when the magic exists
         {
             SpriteRenderer renderer = playerController.magicPrefabs[magicIndex].GetComponent<SpriteRenderer>();
             if (renderer != null)

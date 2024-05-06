@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 588927824715845805}
   - component: {fileID: 6223046838070524723}
   - component: {fileID: 1952842120982894592}
+  - component: {fileID: 2244613261059806386}
   m_Layer: 0
   m_Name: FireBall
   m_TagString: Untagged
@@ -95,7 +96,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3001015759459137671}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
@@ -123,9 +124,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 3001015759459137671}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c042e0178d1ceec458ec216f1e9e52fb, type: 3}
+  m_Script: {fileID: 11500000, guid: 95decab0a66791847be3d0f24dbe6ba3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  explosionPrefabs: {fileID: 4593645074526980885, guid: 70d15ca8da201d647bacdb51618b4ca8, type: 3}
+  damage: 2
 --- !u!95 &1952842120982894592
 Animator:
   serializedVersion: 5
@@ -147,3 +150,38 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!70 &2244613261059806386
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3001015759459137671}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 1.21, y: 0.72}
+  m_Direction: 1

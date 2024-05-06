@@ -14,10 +14,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     Transform magicSpawnPoint; // the position of magic 
 
-    public GameObject[] magicPrefabs; // store different magics
+    public GameObject[] availableMagics; // the list that the player available
+    public List<GameObject> magicPrefabs; // store the magic
+    private GameObject target;  // store the reference to the target that will receive damage
     private Rigidbody2D rb;
     private Animator anim;
-    public AudioSource jumpAudio, jumpAudio2, runAudio, hurtAudio;
     private bool isGround;
     private bool isJump;
     public bool isHurt;
@@ -30,15 +31,23 @@ public class PlayerController : MonoBehaviour
     public Vector2 bottomOffset; // position for the ground check collision
     private float collisionRadius = 0.5f; // radius for the ground check collision
 
+    public float attackRange = 1.0f; // the range of attack
     private float magicCooldown = 5f;  // the cooldown of the magic
     private float lastMagicTime = -5f;  // record last time magic was used
     public int selectedMagicIndex = 0; // the index of the current selected magic
     public MagicUI ui;
+    private HealthSystem healthSystem;
+
+    void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        healthSystem = GetComponent<HealthSystem>();
     }
 
 
@@ -81,17 +90,17 @@ public class PlayerController : MonoBehaviour
             }
 
             // choose the magic
-            if (Input.GetKeyDown(KeyCode.Alpha1) && magicPrefabs.Length > 0)
+            if (Input.GetKeyDown(KeyCode.Alpha1) && magicPrefabs.Count > 0)
             {
                 selectedMagicIndex = 0;
                 ui.UpdateMagicIcon(selectedMagicIndex);
             }
-            if (Input.GetKeyDown(KeyCode.Alpha2) && magicPrefabs.Length > 1)
+            if (Input.GetKeyDown(KeyCode.Alpha2) && magicPrefabs.Count > 1)
             {
                 selectedMagicIndex = 1;
                 ui.UpdateMagicIcon(selectedMagicIndex);
             }
-            if (Input.GetKeyDown(KeyCode.Alpha3) && magicPrefabs.Length > 2)
+            if (Input.GetKeyDown(KeyCode.Alpha3) && magicPrefabs.Count > 2)
             {
                 selectedMagicIndex = 2;
                 ui.UpdateMagicIcon(selectedMagicIndex);
@@ -163,12 +172,50 @@ public class PlayerController : MonoBehaviour
         {
             isJumpAttack = true;
         }
+        // make sure the range can totate the direction
+        Vector3 attackCenter = transform.position + new Vector3(attackRange * transform.localScale.x, 0, 0);
+
+        Collider2D[] hitEnemy = Physics2D.OverlapCircleAll(attackCenter, attackRange, LayerMask.GetMask("Enemy")); // check the enemies in the range
+        foreach (Collider2D enemy in hitEnemy) // iterate every enemy
+        {
+            if (enemy.gameObject.CompareTag("Enemy")) // check the tag is Enemy
+            {
+                target = enemy.gameObject;  // store the enemy
+            }
+        }
+    }
+
+    // the target take damage
+    void TriggerDamage()
+    {
+        isAttack = false;
+        isJumpAttack = false;
+
+        if (target != null)
+        {
+            EnemyHealth enemyHealth = target.GetComponent<EnemyHealth>(); // get the target health script
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage(1); // making damage
+                target = null;
+            }
+        }
+    }
+
+    public void AddMagic(int magicIndex)
+    {   // the magic index must smaller than the number of magicPrefabs and it must , and only add the magic whene the magic prefabs don't contain it
+        {
+            if (magicIndex < availableMagics.Length && !magicPrefabs.Contains(availableMagics[magicIndex]))
+            {
+                magicPrefabs.Add(availableMagics[magicIndex]); // add the corresponding magic to the magicPrefabs
+            }
+        }
     }
 
     void Magic()
     {
 
-        if (selectedMagicIndex < magicPrefabs.Length) // make sure there is the correct index
+        if (selectedMagicIndex < magicPrefabs.Count) // make sure there is the correct index
         {
             if (Time.time - lastMagicTime >= magicCooldown) // the time passed must be greater than cd
             {
@@ -253,28 +300,23 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.tag == "Enemy")
         {
-            if (transform.position.x < collision.gameObject.transform.position.x)
-            {
-                rb.velocity = new Vector2(-5, rb.velocity.y);
-                isHurt = true;
-            }
-            if (transform.position.x > collision.gameObject.transform.position.x)
-            {
-                rb.velocity = new Vector2(5, rb.velocity.y);
-                isHurt = true;
-            }
+            isHurt = true;
+            healthSystem.TakeDamage();
         }
     }
 
-    public void OverHurt()
+    public void MoveToSpawnPoint()
     {
-        isHurt = false;
+        GameObject spawnPoint = GameObject.FindWithTag("SpawnPoint");
+        if (spawnPoint != null)
+        {
+            transform.position = spawnPoint.transform.position;
+        }
     }
 
-    public void OverAttack()
+        public void OverHurt()
     {
-        isAttack = false;
-        isJumpAttack = false;
+        isHurt = false;
     }
 
     public void OverMagic()
@@ -292,7 +334,16 @@ public class PlayerController : MonoBehaviour
         // draw a gizmo at the position of the ground check
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere((Vector2)transform.position + bottomOffset, collisionRadius);
+
+        // draw a attack range
+        if (attackRange > 0)
+        {
+            Vector3 attackCenter = transform.position + new Vector3(attackRange * transform.localScale.x, 0, 0);
+            Gizmos.DrawWireSphere(attackCenter, attackRange);
+
+        }
     }
+
 
 }
 

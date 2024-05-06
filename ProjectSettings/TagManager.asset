@@ -3,7 +3,10 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Enemy
+  - Protected
+  - SpawnPoint
   layers:
   - Default
   - TransparentFX
@@ -11,9 +14,9 @@ TagManager:
   - Ground
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Player
+  - Enemy
+  - Protected
   - 
   - 
   - 
@@ -38,6 +41,18 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 3036035985
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Tile
+    uniqueID: 599627319
+    locked: 0
+  - name: Enemy
+    uniqueID: 1826941735
+    locked: 0
+  - name: Player
+    uniqueID: 2835482523
     locked: 0

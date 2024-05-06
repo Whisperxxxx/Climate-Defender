@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TemperaturePotion : MonoBehaviour, IItem
+public class TemperaturePotion : Potion
 {
     public static TemperaturePotion Instance { get; private set; }  // singleton
 
     private float duration = 30f; // Duration of potion effect
-    private int usageCount = 2; // initialize the usage count
+    private int usageCount = 0; // initialize the usage count
     public PotionUI ui;
     private bool isWorking = false;  // Track whether the potion effect is working
 
@@ -25,7 +25,7 @@ public class TemperaturePotion : MonoBehaviour, IItem
         }
     }
 
-    public void Use()
+    public override void Use()
     {
         if (isWorking)
         {
@@ -65,12 +65,12 @@ public class TemperaturePotion : MonoBehaviour, IItem
         usageCount++;
     }
     // get the usage count
-    public int GetUsageCount()
+    public override int GetUsageCount()
     {
         return usageCount;
     }
     // get the duration of the potion
-    public float GetDuration()
+    public override float GetDuration()
     {
         return duration;
     }

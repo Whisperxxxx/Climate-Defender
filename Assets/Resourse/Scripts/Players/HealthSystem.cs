@@ -58,7 +58,7 @@ public class HealthSystem : MonoBehaviour
     // be attacked
     public void TakeDamage()
     {
-        ChangeHeart(-1);
+        ChangeHeart(-0.5f);
         playerController.isHurt = true;
 
     }
