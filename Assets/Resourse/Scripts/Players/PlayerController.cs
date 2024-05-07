@@ -5,6 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    public static PlayerController Instance; // singleton
+
+
     [SerializeField]
     float jumpForce = 9;
     [SerializeField]
@@ -36,18 +39,24 @@ public class PlayerController : MonoBehaviour
     private float lastMagicTime = -5f;  // record last time magic was used
     public int selectedMagicIndex = 0; // the index of the current selected magic
     public MagicUI ui;
-    private HealthSystem healthSystem;
 
-    void Awake()
+    private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        healthSystem = GetComponent<HealthSystem>();
     }
 
 
@@ -220,9 +229,25 @@ public class PlayerController : MonoBehaviour
             if (Time.time - lastMagicTime >= magicCooldown) // the time passed must be greater than cd
             {
                 lastMagicTime = Time.time;  // update the casting time
-                GameObject magic = Instantiate(magicPrefabs[selectedMagicIndex], magicSpawnPoint.position, Quaternion.identity); // generate a magic Prefab
-                magic.GetComponent<Rigidbody2D>().velocity = new Vector2(10f * transform.localScale.x, 0); // give magic a force
-                magic.transform.localScale = new Vector3(transform.localScale.x, 1, 1); // magic direction
+                Vector2 magicDirection = new Vector2(transform.localScale.x, 0); // dafult casting direction is horizontal
+                Quaternion rotation = Quaternion.identity;
+                Vector3 scale = new Vector3(transform.localScale.x, 1, 1); // set a normal scale, because
+                if (Input.GetKey(KeyCode.W)) 
+                {
+                    magicDirection = new Vector2(0, 1);
+                    rotation = Quaternion.Euler(0, 0, 90); // rotate 90 angle
+                    scale = Vector3.one; // make sure all face right before rotate
+                }
+                else if (Input.GetKey(KeyCode.S)) 
+                {
+                    magicDirection = new Vector2(0, -1);
+                    rotation = Quaternion.Euler(0, 0, -90); // rotate -90 angle
+                    scale = Vector3.one; // make sure all face right before rotate
+                }
+
+                GameObject magic = Instantiate(magicPrefabs[selectedMagicIndex], magicSpawnPoint.position, rotation); // generate magic Prafabs
+                magic.GetComponent<Rigidbody2D>().velocity = magicDirection * 10f; // give magic a force
+                magic.transform.localScale = scale; // ensure that the direction is the one the player is facing
                 ui.StartCountDown();
                 isMagic = true;
                 StartCoroutine(MagicCooldown()); //cd
@@ -291,19 +316,6 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.tag == "Enemy")
-        {
-            isHurt = true;
-            healthSystem.TakeDamage();
-        }
-    }
 
     public void MoveToSpawnPoint()
     {
@@ -314,7 +326,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-        public void OverHurt()
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.CompareTag("DeathLine"))
+        {
+            GameManager.Instance.ReloadCurrentScene();
+
+        }
+    }
+
+
+    public void OverHurt()
     {
         isHurt = false;
     }
@@ -329,6 +351,7 @@ public class PlayerController : MonoBehaviour
         return magicCooldown;
     }
 
+  
     void OnDrawGizmos()
     {
         // draw a gizmo at the position of the ground check

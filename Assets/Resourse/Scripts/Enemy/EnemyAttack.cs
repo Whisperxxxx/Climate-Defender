@@ -20,6 +20,7 @@ public class EnemyAttack : MonoBehaviour
     private bool isAttack = false; 
     public bool isDead = false;
 
+    public float patrolTriggerRange = 10.0f;  // enemies patrol when player access this range
 
     void Start()
     {
@@ -30,16 +31,22 @@ public class EnemyAttack : MonoBehaviour
 
     void Update()
     {
-        if (!isDead && Time.time - lastAttackTime >= attackCooldown) // attack cd
+        Collider2D playerInRange = Physics2D.OverlapCircle(transform.position, patrolTriggerRange, LayerMask.GetMask("Player"));// check player
+        if (playerInRange != null )
         {
-            Attack();
+            if (!isDead && Time.time - lastAttackTime >= attackCooldown) // attack cd
+            {
+                Attack();
+            }
+            if (!isAttack && !isDead) // if not attacking, continue patrolling
+            {
+                Patrol();
+            }
+            SwitchAnim();
+            UpdateDirection();
+
         }
-        if (!isAttack && !isDead) // if not attacking, continue patrolling
-        {
-            Patrol();
-        }
-        SwitchAnim();
-        UpdateDirection();
+
     }
 
     void Attack()
@@ -78,7 +85,16 @@ public class EnemyAttack : MonoBehaviour
             }
             else
             {
-                isAttack = false;
+                ProtectedHealth protectedHealth = target.GetComponent<ProtectedHealth>();
+                if ( protectedHealth != null)
+                {
+                    protectedHealth.TakeDamage();
+                    isAttack = false;
+                }
+                else
+                {
+                    isAttack = false;
+                }
             }
         }
     }
@@ -147,5 +163,8 @@ public class EnemyAttack : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, patrolTriggerRange);  
     }
+
 }

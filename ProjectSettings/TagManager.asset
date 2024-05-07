@@ -7,6 +7,11 @@ TagManager:
   - Enemy
   - Protected
   - SpawnPoint
+  - FireBall
+  - IceBall
+  - MagicInteraction
+  - Ice
+  - DeathLine
   layers:
   - Default
   - TransparentFX
@@ -17,7 +22,7 @@ TagManager:
   - Player
   - Enemy
   - Protected
-  - 
+  - MagicInteraction
   - 
   - 
   - 

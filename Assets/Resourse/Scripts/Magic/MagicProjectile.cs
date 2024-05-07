@@ -24,6 +24,11 @@ public class MagicProjectile : MonoBehaviour
                 Destroy(gameObject);
             }
         }
+        if (collision.gameObject.CompareTag("Ice"))
+        {
+            Instantiate(explosionPrefabs, transform.position, Quaternion.identity); // instantiate a explode animation
+            Destroy(gameObject);
+        }
     }
 }
 

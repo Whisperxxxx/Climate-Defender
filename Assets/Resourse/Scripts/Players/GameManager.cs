@@ -7,20 +7,40 @@ using Cinemachine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance; // singleton
+
     void Awake()
     {
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+        SceneManager.sceneLoaded += OnSceneLoaded; // add event
     }
 
     void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded -= OnSceneLoaded; // remove event
     }
 
     public void LoadScene(string sceneName)
     {
         SceneManager.LoadScene(sceneName);
     }
+
+    // reload current scene
+    public void ReloadCurrentScene()
+    {
+        Scene currentScene = SceneManager.GetActiveScene(); 
+        SceneManager.LoadScene(currentScene.name);
+    }
+
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {

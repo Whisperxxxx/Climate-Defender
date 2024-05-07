@@ -52,6 +52,7 @@ public class HealthSystem : MonoBehaviour
         {
             currentHearts = 0;
             playerController.isDead = true;
+            Die();
         }
     }
 
@@ -61,6 +62,13 @@ public class HealthSystem : MonoBehaviour
         ChangeHeart(-0.5f);
         playerController.isHurt = true;
 
+    }
+
+    public void Die()
+    {
+        GameManager.Instance.ReloadCurrentScene();
+        playerController.isDead = false;
+        ChangeHeart(3f);
     }
 
 }

@@ -29,7 +29,10 @@ public class Door : MonoBehaviour
     {
         if (collision.tag == "Player")
         {
-            enterdialog.SetActive(false);
+            if (enterdialog != null)
+            {
+                enterdialog.SetActive(false);
+            }
             isPlayerNear = false;
         }
     }
